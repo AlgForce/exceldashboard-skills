@@ -1,0 +1,45 @@
+name: Publish MCP Registry
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - server.json
+      - .github/workflows/publish-mcp.yml
+
+concurrency:
+  group: mcp-registry-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'AlgForce/exceldashboard-skills' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout metadata
+        uses: actions/checkout@v5
+
+      - name: Check publication identity
+        run: |
+          jq -e '.name == "io.github.AlgForce/exceldashboard-ai" and .remotes[0].url == "https://api.exceldashboard.ai/mcp" and .remotes[0].type == "streamable-http"' server.json
+
+      - name: Install official publisher
+        run: |
+          curl --fail --location --retry 3 https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz -o "$RUNNER_TEMP/mcp-publisher.tar.gz"
+          tar -xzf "$RUNNER_TEMP/mcp-publisher.tar.gz" -C "$RUNNER_TEMP" mcp-publisher
+
+      - name: Authenticate with repository identity
+        run: '"$RUNNER_TEMP/mcp-publisher" login github-oidc'
+
+      - name: Publish remote MCP metadata
+        run: '"$RUNNER_TEMP/mcp-publisher" publish server.json'
+
+      - name: Verify published metadata
+        run: |
+          curl --fail --silent --show-error --retry 3 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.AlgForce/exceldashboard-ai' -o "$RUNNER_TEMP/registry-response.json"
+          jq -e --slurpfile expected server.json '.servers | any(.server.name == $expected[0].name and .server.version == $expected[0].version and .server.remotes == $expected[0].remotes)' "$RUNNER_TEMP/registry-response.json"

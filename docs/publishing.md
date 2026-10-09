@@ -1,5 +1,7 @@
 # GitHub publication and website integration
 
+For the hosted MCP service's Official MCP Registry metadata and publication steps, see [MCP Registry publication](mcp-registry.md). Skill directory publication and MCP service registration are separate.
+
 ## Repository settings
 
 Recommended About description:
