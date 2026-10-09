@@ -1,4 +1,4 @@
-# ExcelDashBoard Report Outline Format
+# ExcelDashboard AI Report Outline Format
 
 Use this reference to prepare `create_report.outline`. It is based on the project's report Skill outline format and Default layout specifications. It defines page syntax and available layouts, rather than prescribing a fixed number or sequence of analysis pages. Choose pages according to the report goal, audience, and verified data.
 

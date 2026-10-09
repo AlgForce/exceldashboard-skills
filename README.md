@@ -1,131 +1,105 @@
 # ExcelDashboard AI Skills
 
-Official agent skills for data analysis and visual report generation with [ExcelDashboard AI](<https://www.exceldashboard.ai>).
+Official agent skills for analyzing Excel/CSV data and generating visual analytical reports with [ExcelDashboard AI](https://www.exceldashboard.ai/?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=readme).
 
-ExcelDashboard AI helps users turn business data into visual reports with charts, structured analysis, and browser-based report previews. This repository provides instructions that help AI agents prepare report outlines, create reports through MCP, and track report generation.
+Your agent reads the data, verifies calculations, and prepares an analytical outline. The ExcelDashboard AI MCP server creates the visual report and returns a live browser preview. This repository contains the skill instructions and reproducible examples, maintained in the AlgForce GitHub organization.
 
-[Explore ExcelDashboard AI](<https://www.exceldashboard.ai>) · [MCP Setup Guide](<https://www.exceldashboard.ai/mcp>) · [Agent Documentation](<https://www.exceldashboard.ai/mcp.md>)
+[Website](https://www.exceldashboard.ai/?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=website) · [MCP setup](https://www.exceldashboard.ai/mcp?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=setup) · [Installation guide](docs/installation.md) · [Examples](examples/README.md)
 
-## What this skill helps you do
+## See the reporting workflow
 
-- Analyze user-provided data using your agent's available tools.
-- Organize findings into a structured report outline.
-- Create visual reports through the ExcelDashboard AI MCP server.
-- Track report progress and share the report preview link.
-- Produce sales reports, marketing performance reports, agency client reports, and business reviews.
+**Excel or CSV → agent analysis → verified outline → MCP report generation → live preview**
 
-The agent performs data analysis and prepares the outline. ExcelDashboard AI generates the visual report from that outline.
+Use the [agency reporting walkthrough](https://www.exceldashboard.ai/mcp/examples/agency-report?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=agency_example) for the website example, or inspect the [local agency example](examples/agency-report/README.md), including its synthetic CSV and complete outline.
 
-## Available skill
+The repository examples are source data and expected outlines, not screenshots of completed MCP jobs. Their calculations can be reproduced locally without an account. Generating a hosted report requires an authorized account and may consume service credits.
 
-| Skill | Purpose |
-|---|---|
-| ExcelDashboard Report (skills/exceldashboard-report/SKILL.md) | Prepare analytical report outlines, create visual reports, and track generation through MCP. |
+## Quick start
 
-See the report outline format (skills/exceldashboard-report/references/outline-format.md) for the required structure and examples.
+1. Install [exceldashboard-report](skills/exceldashboard-report/SKILL.md) from this repository, preserving its `references/` directory. See the [installation guide](docs/installation.md).
+2. Configure your client's remote MCP connection to `https://api.exceldashboard.ai/mcp` using Streamable HTTP.
+3. Complete browser OAuth and select a workspace. Confirm that this connection discovers `create_report` and `get_report`.
+4. Attach one of the example CSVs and use its prompt to request a report. The agent analyzes the file, submits an outline, and returns the preview link.
 
-## Connect to the MCP server
+Skill installation, MCP configuration, and OAuth are separate steps. Reading this README does not complete them.
+
+## Install and connect
 
 | Setting | Value |
 |---|---|
-| Product | ExcelDashboard AI |
-| Website | https://www.exceldashboard.ai |
-| MCP endpoint | https://api.exceldashboard.ai/mcp |
+| Repository | https://github.com/AlgForce/exceldashboard-skills |
+| Skill directory | `skills/exceldashboard-report` |
+| MCP endpoint | `https://api.exceldashboard.ai/mcp` |
 | Transport | Streamable HTTP |
-| Authentication | OAuth |
-| Setup documentation | https://www.exceldashboard.ai/mcp |
+| Authentication | Browser OAuth and workspace selection |
+| Setup guide | https://www.exceldashboard.ai/mcp |
+| Agent documentation | https://www.exceldashboard.ai/mcp.md |
 
-Connect using a client that supports remote MCP and the server's OAuth flow. Sign in and select the workspace where reports should be created.
+Use your client's supported GitHub skill installer, or copy the complete skill directory into its documented skill location. Client-specific configuration and verification steps are in the [installation guide](docs/installation.md). Compatibility is only claimed when a dated end-to-end result is recorded there.
 
-Installing this skill and connecting the MCP server are separate steps. Users complete authorization in the browser.
+## Reproducible report examples
 
-## Install the skill
+All three examples use **synthetic data**, not real customer records or product performance claims.
 
-Use your agent's supported GitHub skill installation method and select:
+| Example | Business question | Included material |
+|---|---|---|
+| [Sales performance](examples/sales-report/README.md) | How did sales change, and which product contributed most? | CSV, prompt, definitions, four-page outline |
+| [Agency client report](examples/agency-report/README.md) | How did attributed ROAS and cost per conversion change? | CSV, prompt, definitions, four-page outline |
+| [Executive business review](examples/business-review/README.md) | Did revenue meet target, and what was the contribution margin? | CSV, prompt, definitions, four-page outline |
 
+Recalculate the example metrics with Python 3 (standard library only):
+
+```bash
+python3 scripts/verify_examples.py
 ```
-skills/exceldashboard-report
-```
 
-For agents that support local skill directories, copy the complete `exceldashboard-report` folder, including its `references` directory, into the location documented by your agent.
+## Skill and MCP tools
 
-Then connect the MCP server and complete OAuth authorization.
-
-Client support for skill installation and OAuth varies. Consult your client's documentation and the ExcelDashboard AI setup guide.
-
-## Report workflow
-
-1. Read the user's request and available data.
-2. Calculate and verify the findings using the agent's tools.
-3. Prepare an outline following the report outline format.
-4. Call `create_report`.
-5. Show the returned report preview link to the user.
-6. Call `get_report` according to the returned polling interval.
-7. Stop polling when the report completes or fails.
-
-Keep the user informed of report progress and provide the report link with status updates.
-
-## MCP tools
+The [report skill](skills/exceldashboard-report/SKILL.md) covers analysis, submission, progress tracking, and failures. The [outline reference](skills/exceldashboard-report/references/outline-format.md) defines the required page syntax and layouts.
 
 | Tool | Input | Purpose |
 |---|---|---|
-| `create_report` | Required `outline`; optional `locale` | Start report generation from a Markdown outline. |
-| `get_report` | Required `job_id` | Retrieve report status, progress, and the report link. |
+| `create_report` | Required `outline`; optional `locale` | Start a new visual report from a Markdown outline |
+| `get_report` | Required `job_id` | Retrieve progress, final status, and the report URL |
 
-The outline must include a report title, page sections, and the verified information needed to render the report. Set `locale` to `en` for an English report.
-
-The tools do not require users to enter a workspace ID or an idempotency key.
-
-## Example requests
-
-### Sales performance report
-
-“Analyze this sales dataset and create a three-page report covering revenue trends, product performance, and recommended actions.”
-
-### Agency client report
-
-“Create a monthly client report from these campaign results. Include spend, conversions, return on advertising spend, and next month's recommendations.”
-
-### Executive business review
-
-“Turn these business metrics into a visual report with an executive summary, key findings, and supporting charts.”
-
-Provide source data or verified metrics so the agent can prepare an accurate outline.
+Use `locale: "en"` for English output; the documented default is `zh-CN`. Calls do not require a workspace ID or an idempotency key. Each `create_report` call creates a new job, so uncertain submissions should not be retried automatically.
 
 ## Frequently asked questions
 
-### Can I use Excel or CSV files?
+### Can the skill analyze Excel and CSV files?
 
-Yes, when your agent can read those files. The agent analyzes the data and submits a structured outline. The MCP report tools do not accept raw file uploads.
+Yes, when the agent can read and calculate from those files. The agent submits a verified outline and aggregated chart data. These MCP tools do not upload raw files.
 
-### Do I need an ExcelDashboard AI account?
+### Is this an open-source reporting service?
 
-Yes. Report creation requires an authorized account and workspace. Hosted service access is subject to your account's limits and terms.
+The repository's instructions, documentation, and synthetic examples are available under the MIT License. Hosted ExcelDashboard AI access requires an account and is governed by the service's terms, limits, and pricing.
 
-### Does reading this README install the skill?
+### Does it work with every agent?
 
-No. The agent must use a supported skill installation method or load the skill instructions through its available capabilities.
+The client must support the skill-loading workflow, remote Streamable HTTP MCP, and the server's OAuth flow. See the [verification status](docs/installation.md#client-verification-status); an untested client is not a confirmed integration.
 
-### Does installing the skill automatically connect MCP?
+### Where does the report appear?
 
-No. MCP configuration and browser authorization are separate steps.
+The tools return a `report_url`. Open it in a browser to view the report. Automatic opening inside an agent depends on that client's available browser tools. A returned link does not prove generation is complete; the final status must be `completed`.
 
-### Where can I view the report?
+### Can MCP edit an existing report?
 
-The MCP tools return a report preview link. Open that link to view the report in your browser.
+The connector exposes creation and status tools. Use the preview's Edit button for frontend editing with the appropriate signed-in permissions.
+
+### How does GitHub installation relate to SkillHub?
+
+This repository uses the directory name `exceldashboard-report`. Existing website documentation also references the SkillHub identifier `@org-9c0xwtir/algforce-report-v1`. They are separate distribution channels; do not assume their versions match. Use one installation source and compare its instructions when switching.
 
 ## Documentation and support
 
-- [ExcelDashboard AI website](<https://www.exceldashboard.ai>)
-- [MCP connection and setup](<https://www.exceldashboard.ai/mcp>)
-- [Documentation for agents](<https://www.exceldashboard.ai/mcp.md>)
-- Skill instructions (skills/exceldashboard-report/SKILL.md)
-- Report outline format (skills/exceldashboard-report/references/outline-format.md)
+- [Client setup and troubleshooting](https://www.exceldashboard.ai/mcp/guides)
+- [Agent documentation](https://www.exceldashboard.ai/mcp.md)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Report an instruction or installation issue](https://github.com/AlgForce/exceldashboard-skills/issues)
 
-For issues with the skill instructions, use this repository's Issues tab.
+Use repository Issues for reproducible documentation or skill problems. For account and hosted-service support, use the contact options on the [website](https://www.exceldashboard.ai/).
 
 ## License
 
-The skill files in this repository are available under the MIT License (LICENSE).
-
-The license applies to the files in this repository. Access to the hosted ExcelDashboard AI service is governed by the service's terms.
+[MIT](LICENSE) applies to the files in this repository. It does not grant access to the hosted service or change the service's terms.

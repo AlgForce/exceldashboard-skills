@@ -1,11 +1,13 @@
 ---
 name: exceldashboard-report
-description: Analyze user-provided data or a report topic, prepare an ExcelDashboard report outline, and create and track the report through the ExcelDashboard MCP tools. Use when a user asks for an ExcelDashboard data analysis report or wants to track one.
+description: Prepare verified analytical outlines and create or track visual reports through ExcelDashboard AI MCP. Use when users request an ExcelDashboard AI report from Excel, CSV, verified metrics, or a research topic, or ask to track an existing report job.
 ---
 
-# ExcelDashboard.ai Data Analysis Reports
+# ExcelDashboard AI Reports
 
-Use the current client's file-reading, computation, and web-search capabilities to complete the analysis. ExcelDashboard generates reports from the resulting outline. This Skill orchestrates only two MCP tools: `create_report` and `get_report`.
+Use the current client's file-reading, computation, and web-search capabilities to complete the analysis. ExcelDashboard AI generates reports from the resulting outline. This Skill orchestrates only two MCP tools: `create_report` and `get_report`.
+
+The official connection guide is https://www.exceldashboard.ai/mcp and the Streamable HTTP endpoint is https://api.exceldashboard.ai/mcp. Installing these instructions does not configure MCP or complete browser OAuth. Discover the two tools on the authorized ExcelDashboard AI connection before calling them; reading documentation is not proof of connection.
 
 These instructions are written in English. User-facing replies and report content should follow the user's requested language; the instruction language does not require English report content.
 
@@ -31,8 +33,8 @@ Invalid parameters return a tool error with `error_code: "INVALID_ARGUMENT"` and
 
 ## Creation and Tracking
 
-1. Use the workspace selected on the OAuth consent page for the current connection. Tool calls do not require `workspace_id`. If the connection is unauthorized, ask the user to connect ExcelDashboard in the client and select a workspace. Switching workspaces requires authorization again. Do not ask users to send tokens or workspace IDs in the conversation.
-2. Call `create_report` with the complete `outline` and, when needed, `locale` (default: `zh-CN`). Each call submits a new job; do not automatically retry creation. Save the returned `job_id` and immediately show the returned `report_url` as a "View report" link. If a callable built-in browser tool is available, open this URL before the first `get_report` call and save the tab identifier; do not wait until completion to open it. If no such tool exists or opening fails, explain this and continue tracking the job. ExcelDashboard automatically creates a public read-only share when generation completes; users do not need to share manually in the frontend. The preview's Edit button separately verifies the signed-in account and editing permissions.
+1. Use the workspace selected on the OAuth consent page for the current connection. Tool calls do not require `workspace_id`. If the connection is unauthorized, ask the user to connect ExcelDashboard AI in the client and select a workspace. Switching workspaces requires authorization again. Do not ask users to send tokens or workspace IDs in the conversation.
+2. Call `create_report` with the complete `outline` and, when needed, `locale` (default: `zh-CN`). Each call submits a new job; do not automatically retry creation. Save the returned `job_id` and immediately show the returned `report_url` as a "View report" link. If a callable built-in browser tool is available, open this URL before the first `get_report` call and save the tab identifier; do not wait until completion to open it. If no such tool exists or opening fails, explain this and continue tracking the job. ExcelDashboard AI automatically creates a public read-only share when generation completes; users do not need to share manually in the frontend. The preview's Edit button separately verifies the signed-in account and editing permissions.
 3. Query status with `get_report({"job_id":"..."})`. Within the client's available execution time, poll serially using the returned `poll_after_seconds`, or approximately 15 seconds if absent. Do not query the same job concurrently. Report actual progress using `stage`, `completed_pages`, `pages_started`, and `total_pages`; do not invent percentages. After every `get_report` result, update the user-visible progress and refresh the same built-in browser tab, keeping the returned preview link in the update. If the client cannot keep waiting, give the user the `job_id` and preview link. The page updates its own progress; resume by querying the existing job next time rather than creating the same report again.
 4. Check `status` and `report_url` after each `get_report` result. When `status` is `completed`, stop polling immediately, present the link using the rules below. Do not continue saying that report generation is pending. When `status` is `failed`, explain `error_code` and `error_message`; submit a new job only if regeneration is needed after the cause has been addressed. Status queries do not modify the job.
 
@@ -44,8 +46,8 @@ Invalid parameters return a tool error with `error_code: "INVALID_ARGUMENT"` and
 - Open and refresh internally only when the client provides the required tools. Follow their actual schemas; do not invent tool names or private URL schemes. If no callable built-in browser tool exists or execution fails, explain this and retain a clickable link. WorkBuddy users can right-click the link and choose the option to open it internally, or set Settings > General > Link opening behavior to always use the built-in browser. These settings determine where clicked links open; they do not let MCP automatically open tabs.
 - The page automatically updates generated report content every 5 seconds, independently of Agent polling. It shows a waiting message before the first page is generated. Do not describe a running report as completed.
 - Prefer `report_url`, which includes the editing entry point. `share_url` is the underlying read-only `/share/iframe/<share_id>?b=report` share address; provide it separately only when the user requests sharing or embedding. Use the exact returned URL without inserting spaces or rewriting it.
-- When `get_report` returns a nonempty HTTP/HTTPS `report_url`, use the original returned URL in a Markdown link. At completion, reply with the equivalent of "Report generated: [View report](actual report_url)" in the user's language. If the report title is known, it may be used as the link label. `actual report_url` is an explanatory placeholder and must be replaced with the real returned URL.
-- If the backend returns a valid `report_url` during generation, include "[View report](actual report_url)" in progress updates and state that generation is still in progress. Claim completion only when `status` is `completed`; the existence of a link does not prove completion.
+- When `get_report` returns a nonempty HTTP/HTTPS `report_url`, use the original returned URL in a Markdown link. At completion, reply with the equivalent of `Report generated: [View report](actual report_url)` in the user's language. If the report title is known, it may be used as the link label. `actual report_url` is an explanatory placeholder and must be replaced with the real returned URL.
+- If the backend returns a valid `report_url` during generation, include `[View report](actual report_url)` in progress updates and state that generation is still in progress. Claim completion only when `status` is `completed`; the existence of a link does not prove completion.
 - If `report_url` is empty, show only actual progress. Do not construct a link from `job_id`, `report_id`, or a domain. If the job has completed without a link, explain that the report is complete but the service did not return an opening link, retain the job ID for investigation, and stop waiting for generation.
 - Claim that the report has opened inside the client only after actually calling the built-in browser tool and confirming success. If no call was made or it failed, provide the clickable entry point and explain that the user needs to open it; do not claim automatic display.
 
@@ -56,5 +58,5 @@ MCP does not provide a report editing tool. If the user requests changes to an e
 ## Error Recovery
 
 - `NOT_FOUND`: distinguish `job_id` from `report_id`, then check the current user's access and workspace permissions.
-- Authorization failure: guide the user to reconnect ExcelDashboard in the current client. Do not request or display tokens.
+- Authorization failure: guide the user to reconnect ExcelDashboard AI in the current client. Do not request or display tokens.
 - Job failure or timeout: query the existing `job_id` first to confirm its final status. Submit a new creation job only after failure is confirmed and its cause has been addressed.
