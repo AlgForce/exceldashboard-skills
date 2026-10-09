@@ -1,11 +1,11 @@
 ---
 name: exceldashboard-report
-description: Analyze user-provided data or a report topic, prepare an AlgForce report outline, and create and track the report through the AlgForce MCP tools. Use when a user asks for an AlgForce data analysis report or wants to track one.
+description: Analyze user-provided data or a report topic, prepare an ExcelDashboard report outline, and create and track the report through the ExcelDashboard MCP tools. Use when a user asks for an ExcelDashboard data analysis report or wants to track one.
 ---
 
-# AlgForce Data Analysis Reports
+# ExcelDashboard.ai Data Analysis Reports
 
-Use the current client's file-reading, computation, and web-search capabilities to complete the analysis. AlgForce generates reports from the resulting outline. This Skill orchestrates only two MCP tools: `create_report` and `get_report`.
+Use the current client's file-reading, computation, and web-search capabilities to complete the analysis. ExcelDashboard generates reports from the resulting outline. This Skill orchestrates only two MCP tools: `create_report` and `get_report`.
 
 These instructions are written in English. User-facing replies and report content should follow the user's requested language; the instruction language does not require English report content.
 
@@ -31,8 +31,8 @@ Invalid parameters return a tool error with `error_code: "INVALID_ARGUMENT"` and
 
 ## Creation and Tracking
 
-1. Use the workspace selected on the OAuth consent page for the current connection. Tool calls do not require `workspace_id`. If the connection is unauthorized, ask the user to connect AlgForce in the client and select a workspace. Switching workspaces requires authorization again. Do not ask users to send tokens or workspace IDs in the conversation.
-2. Call `create_report` with the complete `outline` and, when needed, `locale` (default: `zh-CN`). Each call submits a new job; do not automatically retry creation. Save the returned `job_id` and immediately show the returned `report_url` as a "View report" link. If a callable built-in browser tool is available, open this URL before the first `get_report` call and save the tab identifier; do not wait until completion to open it. If no such tool exists or opening fails, explain this and continue tracking the job. AlgForce automatically creates a public read-only share when generation completes; users do not need to share manually in the frontend. The preview's Edit button separately verifies the signed-in account and editing permissions.
+1. Use the workspace selected on the OAuth consent page for the current connection. Tool calls do not require `workspace_id`. If the connection is unauthorized, ask the user to connect ExcelDashboard in the client and select a workspace. Switching workspaces requires authorization again. Do not ask users to send tokens or workspace IDs in the conversation.
+2. Call `create_report` with the complete `outline` and, when needed, `locale` (default: `zh-CN`). Each call submits a new job; do not automatically retry creation. Save the returned `job_id` and immediately show the returned `report_url` as a "View report" link. If a callable built-in browser tool is available, open this URL before the first `get_report` call and save the tab identifier; do not wait until completion to open it. If no such tool exists or opening fails, explain this and continue tracking the job. ExcelDashboard automatically creates a public read-only share when generation completes; users do not need to share manually in the frontend. The preview's Edit button separately verifies the signed-in account and editing permissions.
 3. Query status with `get_report({"job_id":"..."})`. Within the client's available execution time, poll serially using the returned `poll_after_seconds`, or approximately 15 seconds if absent. Do not query the same job concurrently. Report actual progress using `stage`, `completed_pages`, `pages_started`, and `total_pages`; do not invent percentages. After every `get_report` result, update the user-visible progress and refresh the same built-in browser tab, keeping the returned preview link in the update. If the client cannot keep waiting, give the user the `job_id` and preview link. The page updates its own progress; resume by querying the existing job next time rather than creating the same report again.
 4. Check `status` and `report_url` after each `get_report` result. When `status` is `completed`, stop polling immediately, present the link using the rules below. Do not continue saying that report generation is pending. When `status` is `failed`, explain `error_code` and `error_message`; submit a new job only if regeneration is needed after the cause has been addressed. Status queries do not modify the job.
 
@@ -56,5 +56,5 @@ MCP does not provide a report editing tool. If the user requests changes to an e
 ## Error Recovery
 
 - `NOT_FOUND`: distinguish `job_id` from `report_id`, then check the current user's access and workspace permissions.
-- Authorization failure: guide the user to reconnect AlgForce in the current client. Do not request or display tokens.
+- Authorization failure: guide the user to reconnect ExcelDashboard in the current client. Do not request or display tokens.
 - Job failure or timeout: query the existing `job_id` first to confirm its final status. Submit a new creation job only after failure is confirmed and its cause has been addressed.
