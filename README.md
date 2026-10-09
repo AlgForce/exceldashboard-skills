@@ -4,6 +4,10 @@ Official agent skills for analyzing Excel/CSV data and generating visual analyti
 
 Your agent reads the data, verifies calculations, and prepares an analytical outline. The ExcelDashboard AI MCP server creates the visual report and returns a live browser preview. This repository contains the skill instructions and reproducible examples, maintained in the AlgForce GitHub organization.
 
+![ExcelDashboard AI workflow: Excel or CSV data is analyzed and verified by an agent, submitted as a Markdown outline through MCP, and turned into a visual report with a live preview.](assets/exceldashboard-workflow.png)
+
+*AI-generated workflow illustration using the synthetic sales example; not a screenshot of the product.*
+
 [Website](https://www.exceldashboard.ai/?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=website) · [MCP setup](https://www.exceldashboard.ai/mcp?utm_source=github&utm_medium=referral&utm_campaign=skills_launch&utm_content=setup) · [Installation guide](docs/installation.md) · [Examples](examples/README.md)
 
 ## See the reporting workflow
